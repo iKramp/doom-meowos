@@ -6,12 +6,28 @@
 #
 CC=  gcc  # gcc or g++
 
-CFLAGS=-g -Wall -DNORMALUNIX -DLINUX # -DUSEASM 
-LDFLAGS=-L/usr/X11R6/lib
-LIBS=-lXext -lX11 -lnsl -lm
+BUILD_DIR := build
+
+# original cflags:
+# CFLAGS=-g -Wall -DNORMALUNIX -DLINUX # -DUSEASM 
+CFLAGS += \
+    -std=c23 \
+    -Wall \
+    -Wextra \
+    -ffreestanding \
+    -nostdlib \
+	-nostartfiles \
+    -fno-stack-protector \
+    -static \
+	-fno-tree-vectorize \
+	-fno-tree-slp-vectorize
+
+
+LDFLAGS += -L/usr/X11R6/lib -nostdlib -static -nostartfiles
+# LIBS=-lXext -lX11 -lnsl -lm
 
 # subdirectory for objects
-O=linux
+O := $(BUILD_DIR)
 
 # not too sophisticated dependency
 OBJS=				\
@@ -80,14 +96,14 @@ OBJS=				\
 all:	 $(O)/linuxxdoom
 
 clean:
-	rm -f *.o *~ *.flc
-	rm -f linux/*
+	rm -f $(BUILD_DIR)
 
-$(O)/linuxxdoom:	$(OBJS) $(O)/i_main.o
+$(O)/linuxxdoom: $(OBJS) $(O)/i_main.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) $(O)/i_main.o \
 	-o $(O)/linuxxdoom $(LIBS)
 
 $(O)/%.o:	%.c
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 #############################################################
