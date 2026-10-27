@@ -538,7 +538,7 @@ void I_FinishUpdate(void) {
         }
 
         fseek(fb_file, i * fb_width, SEEK_SET);
-        fwrite(image_data_row, SCREENWIDTH * 3, 1, fb_file);
+        fwrite(image_data_row, 1, SCREENWIDTH * 3, fb_file);
         
     }
     fflush(fb_file);

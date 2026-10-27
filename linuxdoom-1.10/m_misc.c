@@ -63,28 +63,30 @@ static const char rcsid[] = "$Id: m_misc.c,v 1.6 1997/02/03 22:45:10 b1 Exp $";
 extern patch_t *hu_font[HU_FONTSIZE];
 
 int M_DrawText(int x, int y, boolean direct, char *string) {
-  int c;
-  int w;
+    int c;
+    int w;
 
-  while (*string) {
-    c = toupper(*string) - HU_FONTSTART;
-    string++;
-    if (c < 0 || c > HU_FONTSIZE) {
-      x += 4;
-      continue;
+    while (*string) {
+        c = toupper(*string) - HU_FONTSTART;
+        string++;
+        if (c < 0 || c > HU_FONTSIZE) {
+            x += 4;
+            continue;
+        }
+
+        w = SHORT(hu_font[c]->width);
+        if (x + w > SCREENWIDTH) {
+            break;
+        }
+        if (direct) {
+            V_DrawPatchDirect(x, y, 0, hu_font[c]);
+        } else {
+            V_DrawPatch(x, y, 0, hu_font[c]);
+        }
+        x += w;
     }
 
-    w = SHORT(hu_font[c]->width);
-    if (x + w > SCREENWIDTH)
-      break;
-    if (direct)
-      V_DrawPatchDirect(x, y, 0, hu_font[c]);
-    else
-      V_DrawPatch(x, y, 0, hu_font[c]);
-    x += w;
-  }
-
-  return x;
+    return x;
 }
 
 //
@@ -95,50 +97,50 @@ int M_DrawText(int x, int y, boolean direct, char *string) {
 #endif
 
 boolean M_WriteFile(char const *name, void *source, int length) {
-  FILE *handle;
-  int count;
+    FILE *handle;
+    int count;
 
-  handle = fopen(name, "wb");
-  if (handle == NULL) {
-    return false;
-  }
+    handle = fopen(name, "wb");
+    if (handle == NULL) {
+        return false;
+    }
 
-  count = fwrite(source, 1, length, handle);
-  fclose(handle);
+    count = fwrite(source, 1, length, handle);
+    fclose(handle);
 
-  if (count < length) {
-    return false;
-  }
-  return true;
+    if (count < length) {
+        return false;
+    }
+    return true;
 }
 
 //
 // M_ReadFile
 //
 int M_ReadFile(char const *name, byte **buffer) {
-  int count, length;
-  FILE *handle;
-  InodeStat stat;
-  byte *buf;
+    int count, length;
+    FILE *handle;
+    InodeStat stat;
+    byte *buf;
 
-  handle = fopen(name, "rb");
-  if (!handle) {
-    I_Error("Couldn't read file %s", name);
-  }
-  if (_fstat(handle->fd, &stat) == -1) {
-    I_Error("Couldn't read file %s", name);
-  }
-  length = stat.size;
-  buf = Z_Malloc(length, PU_STATIC, NULL);
-  count = fread(buf, 1, length, handle);
-  fclose(handle);
+    handle = fopen(name, "rb");
+    if (!handle) {
+        I_Error("Couldn't read file %s", name);
+    }
+    if (_fstat(handle->fd, &stat) == -1) {
+        I_Error("Couldn't read file %s", name);
+    }
+    length = stat.size;
+    buf = Z_Malloc(length, PU_STATIC, NULL);
+    count = fread(buf, length, 1, handle);
+    fclose(handle);
 
-  if (count < length) {
-    I_Error("Couldn't read file %s", name);
-  }
+    if (count < length) {
+        I_Error("Couldn't read file %s", name);
+    }
 
-  *buffer = buf;
-  return length;
+    *buffer = buf;
+    return length;
 }
 
 //
@@ -198,11 +200,11 @@ char *mousedev;
 extern char *chat_macros[];
 
 typedef struct {
-  char *name;
-  int *location;
-  uint64_t defaultvalue;
-  int scantranslate; // PC scan code hack
-  int untranslated;  // lousy hack
+    char *name;
+    int *location;
+    uint64_t defaultvalue;
+    int scantranslate; // PC scan code hack
+    int untranslated;  // lousy hack
 } default_t;
 
 default_t defaults[] = {
@@ -275,25 +277,27 @@ char *defaultfile;
 // M_SaveDefaults
 //
 void M_SaveDefaults(void) {
-  int i;
-  int v;
-  FILE *f;
+    int i;
+    int v;
+    FILE *f;
 
-  f = fopen(defaultfile, "w");
-  if (!f)
-    return; // can't write the file, but don't complain
-
-  for (i = 0; i < numdefaults; i++) {
-    if (defaults[i].defaultvalue > -0xfff && defaults[i].defaultvalue < 0xfff) {
-      v = *defaults[i].location;
-      fprintf(f, "%s\t\t%i\n", defaults[i].name, v);
-    } else {
-      fprintf(f, "%s\t\t\"%s\"\n", defaults[i].name,
-              *(char **)(defaults[i].location));
+    f = fopen(defaultfile, "w");
+    if (!f) {
+        return; // can't write the file, but don't complain
     }
-  }
 
-  fclose(f);
+    for (i = 0; i < numdefaults; i++) {
+        if (defaults[i].defaultvalue > -0xfff &&
+            defaults[i].defaultvalue < 0xfff) {
+            v = *defaults[i].location;
+            fprintf(f, "%s\t\t%i\n", defaults[i].name, v);
+        } else {
+            fprintf(f, "%s\t\t\"%s\"\n", defaults[i].name,
+                    *(char **)(defaults[i].location));
+        }
+    }
+
+    fclose(f);
 }
 
 //
@@ -302,122 +306,136 @@ void M_SaveDefaults(void) {
 extern byte scantokey[128];
 
 void M_LoadDefaults(void) {
-  int i;
-  int len;
-  FILE *f;
-  char def[80];
-  char strparm[100];
-  char line[200];
-  char *newstring;
-  int parm;
-  boolean isstring;
+    int i;
+    int len;
+    FILE *f;
+    char def[80];
+    char strparm[100];
+    char line[200];
+    char *newstring;
+    int parm;
+    boolean isstring;
 
-  // set everything to base values
-  numdefaults = sizeof(defaults) / sizeof(defaults[0]);
-  for (i = 0; i < numdefaults; i++)
-    *defaults[i].location = defaults[i].defaultvalue;
-
-  // check for a custom default file
-  i = M_CheckParm("-config");
-  if (i && i < myargc - 1) {
-    defaultfile = myargv[i + 1];
-    printf("	default file: %s\n", defaultfile);
-  } else
-    defaultfile = basedefault;
-
-  // read the file in, overriding any set defaults
-  f = fopen(defaultfile, "r");
-  if (f) {
-    while (!feof(f)) {
-      isstring = false;
-
-      int count = getline(line, sizeof(line), f);
-      if (count <= 0)
-        continue; // empty line
-
-      char *p = line;
-      char *end;
-
-      // Skip leading whitespace
-      while (*p == ' ' || *p == '\t')
-        p++;
-
-      // Extract definition name
-      char *start = p;
-      while (*p && *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r')
-        p++;
-
-      if (p == start)
-        continue;
-
-      size_t deflen = p - start;
-      if (deflen >= sizeof(def))
-        continue;
-
-      memcpy(def, start, deflen);
-      def[deflen] = '\0';
-
-      // Skip whitespace before parameter
-      while (*p == ' ' || *p == '\t')
-        p++;
-
-      if (*p == '\0' || *p == '\n' || *p == '\r')
-        continue;
-
-      // Extract parameter (trim trailing newline)
-      start = p;
-      p += strlen(p);
-
-      while (p > start && (p[-1] == '\n' || p[-1] == '\r'))
-        *--p = '\0';
-
-      if (*start == '"') {
-        // Get a string default
-        isstring = true;
-
-        len = strlen(start);
-        if (len < 2 || start[len - 1] != '"')
-          continue;
-
-        start[len - 1] = '\0';
-
-        newstring = malloc(len - 1);
-        if (!newstring)
-          continue;
-
-        strcpy(newstring, start + 1);
-      } else {
-        // Parse numeric default
-        int base = 10;
-
-        if (start[0] == '0' && start[1] == 'x') {
-          base = 16;
-          start += 2;
-        } else if (start[0] == '0') {
-          base = 0; // Preserve the original %i behavior
-        }
-
-        parm = (int)strtol(start, &end, base);
-
-        if (end == start)
-          continue;
-      }
-
-      // Find matching definition
-      for (i = 0; i < numdefaults; i++) {
-        if (!strcmp(def, defaults[i].name)) {
-          if (!isstring)
-            *defaults[i].location = parm;
-          else
-            *defaults[i].location = (int)newstring;
-
-          break;
-        }
-      }
+    // set everything to base values
+    numdefaults = sizeof(defaults) / sizeof(defaults[0]);
+    for (i = 0; i < numdefaults; i++) {
+        *defaults[i].location = defaults[i].defaultvalue;
     }
 
-    fclose(f);
-  }
+    // check for a custom default file
+    i = M_CheckParm("-config");
+    if (i && i < myargc - 1) {
+        defaultfile = myargv[i + 1];
+        printf("	default file: %s\n", defaultfile);
+    } else {
+        defaultfile = basedefault;
+    }
+
+    // read the file in, overriding any set defaults
+    f = fopen(defaultfile, "r");
+    if (f) {
+        while (!feof(f)) {
+            isstring = false;
+
+            int count = getline(line, sizeof(line), f);
+            if (count <= 0) {
+                continue; // empty line
+            }
+
+            char *p = line;
+            char *end;
+
+            // Skip leading whitespace
+            while (*p == ' ' || *p == '\t') {
+                p++;
+            }
+
+            // Extract definition name
+            char *start = p;
+            while (*p && *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r') {
+                p++;
+            }
+
+            if (p == start) {
+                continue;
+            }
+
+            size_t deflen = p - start;
+            if (deflen >= sizeof(def)) {
+                continue;
+            }
+
+            memcpy(def, start, deflen);
+            def[deflen] = '\0';
+
+            // Skip whitespace before parameter
+            while (*p == ' ' || *p == '\t') {
+                p++;
+            }
+
+            if (*p == '\0' || *p == '\n' || *p == '\r') {
+                continue;
+            }
+
+            // Extract parameter (trim trailing newline)
+            start = p;
+            p += strlen(p);
+
+            while (p > start && (p[-1] == '\n' || p[-1] == '\r')) {
+                *--p = '\0';
+            }
+
+            if (*start == '"') {
+                // Get a string default
+                isstring = true;
+
+                len = strlen(start);
+                if (len < 2 || start[len - 1] != '"') {
+                    continue;
+                }
+
+                start[len - 1] = '\0';
+
+                newstring = malloc(len - 1);
+                if (!newstring) {
+                    continue;
+                }
+
+                strcpy(newstring, start + 1);
+            } else {
+                // Parse numeric default
+                int base = 10;
+
+                if (start[0] == '0' && start[1] == 'x') {
+                    base = 16;
+                    start += 2;
+                } else if (start[0] == '0') {
+                    base = 0; // Preserve the original %i behavior
+                }
+
+                parm = (int)strtol(start, &end, base);
+
+                if (end == start) {
+                    continue;
+                }
+            }
+
+            // Find matching definition
+            for (i = 0; i < numdefaults; i++) {
+                if (!strcmp(def, defaults[i].name)) {
+                    if (!isstring) {
+                        *defaults[i].location = parm;
+                    } else {
+                        *defaults[i].location = (int)newstring;
+                    }
+
+                    break;
+                }
+            }
+        }
+
+        fclose(f);
+    }
 }
 
 //
@@ -425,28 +443,28 @@ void M_LoadDefaults(void) {
 //
 
 typedef struct {
-  char manufacturer;
-  char version;
-  char encoding;
-  char bits_per_pixel;
+    char manufacturer;
+    char version;
+    char encoding;
+    char bits_per_pixel;
 
-  unsigned short xmin;
-  unsigned short ymin;
-  unsigned short xmax;
-  unsigned short ymax;
+    unsigned short xmin;
+    unsigned short ymin;
+    unsigned short xmax;
+    unsigned short ymax;
 
-  unsigned short hres;
-  unsigned short vres;
+    unsigned short hres;
+    unsigned short vres;
 
-  unsigned char palette[48];
+    unsigned char palette[48];
 
-  char reserved;
-  char color_planes;
-  unsigned short bytes_per_line;
-  unsigned short palette_type;
+    char reserved;
+    char color_planes;
+    unsigned short bytes_per_line;
+    unsigned short palette_type;
 
-  char filler[58];
-  unsigned char data; // unbounded
+    char filler[58];
+    unsigned char data; // unbounded
 } pcx_t;
 
 //
@@ -454,85 +472,87 @@ typedef struct {
 //
 void WritePCXfile(char *filename, byte *data, int width, int height,
                   byte *palette) {
-  int i;
-  int length;
-  pcx_t *pcx;
-  byte *pack;
+    int i;
+    int length;
+    pcx_t *pcx;
+    byte *pack;
 
-  pcx = Z_Malloc(width * height * 2 + 1000, PU_STATIC, NULL);
+    pcx = Z_Malloc(width * height * 2 + 1000, PU_STATIC, NULL);
 
-  pcx->manufacturer = 0x0a; // PCX id
-  pcx->version = 5;         // 256 color
-  pcx->encoding = 1;        // uncompressed
-  pcx->bits_per_pixel = 8;  // 256 color
-  pcx->xmin = 0;
-  pcx->ymin = 0;
-  pcx->xmax = SHORT(width - 1);
-  pcx->ymax = SHORT(height - 1);
-  pcx->hres = SHORT(width);
-  pcx->vres = SHORT(height);
-  memset(pcx->palette, 0, sizeof(pcx->palette));
-  pcx->color_planes = 1; // chunky image
-  pcx->bytes_per_line = SHORT(width);
-  pcx->palette_type = SHORT(2); // not a grey scale
-  memset(pcx->filler, 0, sizeof(pcx->filler));
+    pcx->manufacturer = 0x0a; // PCX id
+    pcx->version = 5;         // 256 color
+    pcx->encoding = 1;        // uncompressed
+    pcx->bits_per_pixel = 8;  // 256 color
+    pcx->xmin = 0;
+    pcx->ymin = 0;
+    pcx->xmax = SHORT(width - 1);
+    pcx->ymax = SHORT(height - 1);
+    pcx->hres = SHORT(width);
+    pcx->vres = SHORT(height);
+    memset(pcx->palette, 0, sizeof(pcx->palette));
+    pcx->color_planes = 1; // chunky image
+    pcx->bytes_per_line = SHORT(width);
+    pcx->palette_type = SHORT(2); // not a grey scale
+    memset(pcx->filler, 0, sizeof(pcx->filler));
 
-  // pack the image
-  pack = &pcx->data;
+    // pack the image
+    pack = &pcx->data;
 
-  for (i = 0; i < width * height; i++) {
-    if ((*data & 0xc0) != 0xc0)
-      *pack++ = *data++;
-    else {
-      *pack++ = 0xc1;
-      *pack++ = *data++;
+    for (i = 0; i < width * height; i++) {
+        if ((*data & 0xc0) != 0xc0) {
+            *pack++ = *data++;
+        } else {
+            *pack++ = 0xc1;
+            *pack++ = *data++;
+        }
     }
-  }
 
-  // write the palette
-  *pack++ = 0x0c; // palette ID byte
-  for (i = 0; i < 768; i++)
-    *pack++ = *palette++;
+    // write the palette
+    *pack++ = 0x0c; // palette ID byte
+    for (i = 0; i < 768; i++) {
+        *pack++ = *palette++;
+    }
 
-  // write output file
-  length = pack - (byte *)pcx;
-  M_WriteFile(filename, pcx, length);
+    // write output file
+    length = pack - (byte *)pcx;
+    M_WriteFile(filename, pcx, length);
 
-  Z_Free(pcx);
+    Z_Free(pcx);
 }
 
 //
 // M_ScreenShot
 //
 void M_ScreenShot(void) {
-  int i;
-  byte *linear;
-  char lbmname[12];
-  FILE *f;
+    int i;
+    byte *linear;
+    char lbmname[12];
+    FILE *f;
 
-  // munge planar buffer to linear
-  linear = screens[2];
-  I_ReadScreen(linear);
+    // munge planar buffer to linear
+    linear = screens[2];
+    I_ReadScreen(linear);
 
-  // find a file name to save it to
-  strcpy(lbmname, "DOOM00.pcx");
+    // find a file name to save it to
+    strcpy(lbmname, "DOOM00.pcx");
 
-  for (i = 0; i <= 99; i++) {
-    lbmname[4] = i / 10 + '0';
-    lbmname[5] = i % 10 + '0';
-    f = fopen(lbmname, "r"); // r does not create if it doesn't exist
-    fclose(f);
-    if (f) {
-      continue; // file exists
+    for (i = 0; i <= 99; i++) {
+        lbmname[4] = i / 10 + '0';
+        lbmname[5] = i % 10 + '0';
+        f = fopen(lbmname, "r"); // r does not create if it doesn't exist
+        fclose(f);
+        if (f) {
+            continue; // file exists
+        }
+        break; // file doesn't exist
     }
-    break; // file doesn't exist
-  }
-  if (i == 100)
-    I_Error("M_ScreenShot: Couldn't create a PCX");
+    if (i == 100) {
+        I_Error("M_ScreenShot: Couldn't create a PCX");
+    }
 
-  // save the pcx file
-  WritePCXfile(lbmname, linear, SCREENWIDTH, SCREENHEIGHT,
-               W_CacheLumpName("PLAYPAL", PU_CACHE));
+    // save the pcx file
+    WritePCXfile(lbmname, linear, SCREENWIDTH, SCREENHEIGHT,
+                 W_CacheLumpName("PLAYPAL", PU_CACHE));
 
-  players[consoleplayer].message = "screen shot";
+    players[consoleplayer].message = "screen shot";
 }

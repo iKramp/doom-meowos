@@ -497,6 +497,7 @@ void D_AddFile(char *file) {
 //
 void IdentifyVersion(void) {
     if (M_CheckParm("-shdev")) {
+        printf("Shareware development mode.\n");
         gamemode = shareware;
         devparm = true;
         D_AddFile(DEVDATA "doom1.wad");
@@ -507,6 +508,7 @@ void IdentifyVersion(void) {
     }
 
     if (M_CheckParm("-regdev")) {
+        printf("Registered development mode.\n");
         gamemode = registered;
         devparm = true;
         D_AddFile(DEVDATA "doom.wad");
@@ -518,6 +520,7 @@ void IdentifyVersion(void) {
     }
 
     if (M_CheckParm("-comdev")) {
+        printf("Commercial development mode.\n");
         gamemode = commercial;
         devparm = true;
         D_AddFile(DEVDATA "doom2.wad");

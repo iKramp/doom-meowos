@@ -46,8 +46,8 @@
 //  relative to current position.
 // Path names are OS-sensitive.
 //
-#define DEVMAPS "devmaps"
-#define DEVDATA "devdata"
+#define DEVMAPS "doom/devmaps/"
+#define DEVDATA "doom/devdata/"
 
 
 // Not done in french?
