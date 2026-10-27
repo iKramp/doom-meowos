@@ -22,6 +22,7 @@
 
 #ifndef __I_SOUND__
 #define __I_SOUND__
+#ifndef NOSOUND
 
 #include "doomdef.h"
 
@@ -114,7 +115,8 @@ void I_UnRegisterSong(int handle);
 
 
 
-#endif
+#endif // NOSOUND
+#endif // __I_SOUND__
 //-----------------------------------------------------------------------------
 //
 // $Log:$

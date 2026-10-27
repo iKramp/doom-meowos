@@ -1,0 +1,48 @@
+[
+  {
+    "file": "doomdef.c",
+    "arguments": [
+      "/nix/store/r5ri78axx1qggkjq3vawywlzglg70b5w-gcc-wrapper-16.2.0/bin/gcc",
+      "-nostdinc",
+      "-I/nix/store/m9v1qv2lkz161zl24zrq0rm9fcqr6i7d-my-libc-0.1.0/include",
+      "-std=c23",
+      "-Wall",
+      "-Wextra",
+      "-ffreestanding",
+      "-fno-stack-protector",
+      "-fno-tree-vectorize",
+      "-fno-tree-slp-vectorize",
+      "-DNOSOUND",
+      "-DNONET",
+      "-c",
+      "doomdef.c",
+      "-o",
+      "build/doomdef.o"
+    ],
+    "directory": "/home/nejc/dev/doom-meowos/linuxdoom-1.10",
+    "output": "build/doomdef.o"
+  },
+  {
+    "file": "doomstat.c",
+    "arguments": [
+      "/nix/store/r5ri78axx1qggkjq3vawywlzglg70b5w-gcc-wrapper-16.2.0/bin/gcc",
+      "-nostdinc",
+      "-I/nix/store/m9v1qv2lkz161zl24zrq0rm9fcqr6i7d-my-libc-0.1.0/include",
+      "-std=c23",
+      "-Wall",
+      "-Wextra",
+      "-ffreestanding",
+      "-fno-stack-protector",
+      "-fno-tree-vectorize",
+      "-fno-tree-slp-vectorize",
+      "-DNOSOUND",
+      "-DNONET",
+      "-c",
+      "doomstat.c",
+      "-o",
+      "build/doomstat.o"
+    ],
+    "directory": "/home/nejc/dev/doom-meowos/linuxdoom-1.10",
+    "output": "build/doomstat.o"
+  }
+]

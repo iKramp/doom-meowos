@@ -1,5 +1,5 @@
 {
-  description = "Test program for my libc";
+  description = "Doom on my kernel";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";

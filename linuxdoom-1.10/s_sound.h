@@ -22,6 +22,7 @@
 
 #ifndef __S_SOUND__
 #define __S_SOUND__
+#ifndef NOSOUND
 
 
 #ifdef __GNUG__
@@ -101,7 +102,8 @@ void S_SetMusicVolume(int volume);
 void S_SetSfxVolume(int volume);
 
 
-#endif
+#endif // NOSOUND
+#endif // __S_SOUND__
 //-----------------------------------------------------------------------------
 //
 // $Log:$

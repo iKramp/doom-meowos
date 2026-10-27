@@ -29,12 +29,8 @@ static const char rcsid[] = "$Id: d_main.c,v 1.8 1997/02/03 22:45:09 b1 Exp $";
 #define BGCOLOR 7
 #define FGCOLOR 8
 
-#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
 
 #include "doomdef.h"
 #include "doomstat.h"
@@ -278,7 +274,9 @@ void D_Display(void) {
 
     // menus go directly to the screen
     M_Drawer();  // menu is drawn even on top of everything
+#ifndef NONET
     NetUpdate(); // send out any new accumulation
+#endif
 
     // normal update
     if (!wipe) {
@@ -314,13 +312,6 @@ void D_DoomLoop(void) {
     if (demorecording)
         G_BeginRecording();
 
-    if (M_CheckParm("-debugfile")) {
-        char filename[20];
-        sprintf(filename, "debug%i.txt", consoleplayer);
-        printf("debug output to: %s\n", filename);
-        debugfile = fopen(filename, "w");
-    }
-
     I_InitGraphics();
 
     while (1) {
@@ -331,18 +322,26 @@ void D_DoomLoop(void) {
         if (singletics) {
             I_StartTic();
             D_ProcessEvents();
+#ifndef NONET
             G_BuildTiccmd(&netcmds[consoleplayer][maketic % BACKUPTICS]);
+#endif
             if (advancedemo)
                 D_DoAdvanceDemo();
             M_Ticker();
             G_Ticker();
             gametic++;
+#ifndef NONET
             maketic++;
+#endif
         } else {
+#ifndef NONET
             TryRunTics(); // will run at least one tic
+#endif
         }
 
+#ifndef NOSOUND
         S_UpdateSounds(players[consoleplayer].mo); // move positional sounds
+#endif
 
         // Update display, next frame, with current state.
         D_Display();
@@ -354,7 +353,9 @@ void D_DoomLoop(void) {
         // Synchronous sound output is explicitly called.
 #ifndef SNDINTR
         // Update sound output.
+#ifndef NOSOUND
         I_SubmitSound();
+#endif
 #endif
     }
 }
@@ -412,10 +413,12 @@ void D_DoAdvanceDemo(void) {
             pagetic = 170;
         gamestate = GS_DEMOSCREEN;
         pagename = "TITLEPIC";
+#ifndef NOSOUND
         if (gamemode == commercial)
             S_StartMusic(mus_dm2ttl);
         else
             S_StartMusic(mus_intro);
+#endif
         break;
     case 1:
         G_DeferedPlayDemo("demo1");
@@ -433,7 +436,9 @@ void D_DoAdvanceDemo(void) {
         if (gamemode == commercial) {
             pagetic = 35 * 11;
             pagename = "TITLEPIC";
+#ifndef NOSOUND
             S_StartMusic(mus_dm2ttl);
+#endif
         } else {
             pagetic = 200;
 
@@ -574,16 +579,6 @@ void IdentifyVersion(void) {
         D_AddFile(DEVMAPS "cdata/texture1.lmp");
         D_AddFile(DEVMAPS "cdata/pnames.lmp");
         strcpy(basedefault, DEVDATA "default.cfg");
-        return;
-    }
-
-    if (!access(doom2fwad, R_OK)) {
-        gamemode = commercial;
-        // C'est ridicule!
-        // Let's handle languages in config files, okay?
-        language = french;
-        printf("French version\n");
-        D_AddFile(doom2fwad);
         return;
     }
 

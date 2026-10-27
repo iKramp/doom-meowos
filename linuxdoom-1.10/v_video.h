@@ -44,6 +44,7 @@
 
 
 
+//screens[0] is image->data
 extern	byte*		screens[5];
 
 extern  int	dirtybox[4];

@@ -20,7 +20,9 @@ CFLAGS += \
     -fno-stack-protector \
     -static \
 	-fno-tree-vectorize \
-	-fno-tree-slp-vectorize
+	-fno-tree-slp-vectorize \
+	-DNOSOUND \
+	-DNONET
 
 
 LDFLAGS += -L/usr/X11R6/lib -nostdlib -static -nostartfiles
@@ -96,7 +98,7 @@ OBJS=				\
 all:	 $(O)/linuxxdoom
 
 clean:
-	rm -f $(BUILD_DIR)
+	rm -rf $(BUILD_DIR)
 
 $(O)/linuxxdoom: $(OBJS) $(O)/i_main.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) $(O)/i_main.o \

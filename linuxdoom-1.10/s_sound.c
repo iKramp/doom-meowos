@@ -20,6 +20,7 @@
 //
 //-----------------------------------------------------------------------------
 
+#ifndef NOSOUND
 
 static const char
 rcsid[] = "$Id: s_sound.c,v 1.6 1997/02/03 22:45:12 b1 Exp $";
@@ -874,6 +875,4 @@ S_getChannel
     return cnum;
 }
 
-
-
-
+#endif // NOSOUND
