@@ -42,11 +42,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1793040991,
-        "narHash": "sha256-JaAYIAPsHQEO/j/iWzCQHOgPfyV/ygn6kBbzrlq0xKo=",
+        "lastModified": 1793098429,
+        "narHash": "sha256-oOMGe/DHZtndUDzX4Qc6VPrqAfoEx1X7GSxKEtYiW7Y=",
         "ref": "refs/heads/master",
-        "rev": "8bc88fd0f6cfe60d5ee1bc8d03bf960e6f0e935b",
-        "revCount": 66,
+        "rev": "70d20a3b5dec0b027e34cb0928ff575b7afc0fc3",
+        "revCount": 74,
         "type": "git",
         "url": "file:///home/nejc/dev/libc"
       },

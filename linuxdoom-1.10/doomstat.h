@@ -269,7 +269,6 @@ extern int		skyflatnum;
 
 
 // Netgame stuff (buffers and pointers, i.e. indices).
-#ifndef NONET
 // This is ???
 extern  doomcom_t*	doomcom;
 
@@ -285,7 +284,6 @@ extern  int             nettics[MAXNETNODES];
 
 extern  ticcmd_t        netcmds[MAXPLAYERS][BACKUPTICS];
 extern	int		ticdup;
-#endif
 
 
 #endif

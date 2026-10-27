@@ -62,11 +62,6 @@ static const char rcsid[] = "$Id: i_x.c,v 1.6 1997/02/03 22:45:10 b1 Exp $";
 
 #define POINTER_WARP_COUNTDOWN 1
 
-// Display *X_display = 0;
-// Window X_mainWindow;
-// Colormap X_cmap;
-// Visual *X_visual;
-// GC X_gc;
 struct InputEvent input_event;
 int input_event_fd = -1;
 // int X_screen;
@@ -74,7 +69,14 @@ FILE *fb_file = NULL;
 int fb_width;
 int fb_height;
 uint8_t *image_data_256;
-uint8_t *color_palette;
+
+struct color {
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+};
+
+struct color *color_palette;
 uint8_t *image_data_row;
 
 // MIT SHared Memory extension.
@@ -530,12 +532,9 @@ void I_FinishUpdate(void) {
     for (i = 0; i < SCREENHEIGHT; i++) {
         for (int j = 0; j < SCREENWIDTH; j++) {
             uint8_t color_index = screens[0][i * SCREENWIDTH + j];
-            uint8_t r = color_palette[color_index * 3];
-            uint8_t g = color_palette[color_index * 3 + 1];
-            uint8_t b = color_palette[color_index * 3 + 2];
-            image_data_row[j * 3 + 0] = r;
-            image_data_row[j * 3 + 1] = g;
-            image_data_row[j * 3 + 2] = b;
+            image_data_row[j * 3 + 0] = color_palette[color_index].r;
+            image_data_row[j * 3 + 1] = color_palette[color_index].g;
+            image_data_row[j * 3 + 2] = color_palette[color_index].b;
         }
 
         fseek(fb_file, i * fb_width, SEEK_SET);
@@ -550,6 +549,23 @@ void I_FinishUpdate(void) {
 //
 void I_ReadScreen(byte *scr) {
     memcpy(scr, screens[0], SCREENWIDTH * SCREENHEIGHT);
+}
+
+void UploadNewPalette(byte *palette)
+{
+
+    register int	i;
+    register int	c;
+
+    // set the X colormap entries
+    for (i=0 ; i<256 ; i++) {
+        c = gammatable[usegamma][*palette++];
+        color_palette[i].r = c;
+        c = gammatable[usegamma][*palette++];
+        color_palette[i].g = c;
+        c = gammatable[usegamma][*palette++];
+        color_palette[i].b = c;
+    }
 }
 
 void I_InitGraphics(void) {

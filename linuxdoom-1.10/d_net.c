@@ -24,7 +24,6 @@
 
 
 static const char rcsid[] = "$Id: d_net.c,v 1.3 1997/02/03 22:01:47 b1 Exp $";
-#ifndef NONET
 
 
 #include "m_menu.h"
@@ -766,5 +765,3 @@ void TryRunTics (void)
 	NetUpdate ();	// check for new console commands
     }
 }
-
-#endif

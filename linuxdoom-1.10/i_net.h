@@ -23,9 +23,6 @@
 #ifndef __I_NET__
 #define __I_NET__
 
-#ifndef NONET
-
-
 #ifdef __GNUG__
 #pragma interface
 #endif
@@ -38,7 +35,6 @@
 void I_InitNetwork (void);
 void I_NetCmd (void);
 
-#endif
 #endif
 //-----------------------------------------------------------------------------
 //

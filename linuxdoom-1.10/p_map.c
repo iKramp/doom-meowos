@@ -1101,7 +1101,9 @@ boolean	PTR_UseTraverse (intercept_t* in)
 	P_LineOpening (in->d.line);
 	if (openrange <= 0)
 	{
+#ifndef NOSOUND
 	    S_StartSound (usething, sfx_noway);
+#endif
 	    
 	    // can't use through a wall
 	    return false;	

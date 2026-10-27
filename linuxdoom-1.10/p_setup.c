@@ -26,8 +26,6 @@ static const char
 rcsid[] = "$Id: p_setup.c,v 1.5 1997/02/03 22:45:12 b1 Exp $";
 
 
-#include <math.h>
-
 #include "z_zone.h"
 
 #include "m_swap.h"
@@ -604,7 +602,9 @@ P_SetupLevel
     players[consoleplayer].viewz = 1; 
 
     // Make sure all sounds are stopped before Z_FreeTags.
+#ifndef NOSOUND
     S_Start ();			
+#endif
 
     
 #if 0 // UNUSED

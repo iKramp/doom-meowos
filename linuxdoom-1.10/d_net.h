@@ -23,8 +23,6 @@
 #ifndef __D_NET__
 #define __D_NET__
 
-#ifndef NONET
-
 #include "d_player.h"
 
 
@@ -142,8 +140,6 @@ void TryRunTics (void);
 
 
 #endif
-#endif
-
 //-----------------------------------------------------------------------------
 //
 // $Log:$

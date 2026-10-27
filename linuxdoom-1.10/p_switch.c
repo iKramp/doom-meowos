@@ -225,7 +225,9 @@ P_ChangeSwitchTexture
     {
 	if (switchlist[i] == texTop)
 	{
+#ifndef NOSOUND
 	    S_StartSound(buttonlist->soundorg,sound);
+#endif
 	    sides[line->sidenum[0]].toptexture = switchlist[i^1];
 
 	    if (useAgain)
@@ -237,7 +239,9 @@ P_ChangeSwitchTexture
 	{
 	    if (switchlist[i] == texMid)
 	    {
+#ifndef NOSOUND
 		S_StartSound(buttonlist->soundorg,sound);
+#endif
 		sides[line->sidenum[0]].midtexture = switchlist[i^1];
 
 		if (useAgain)
@@ -249,7 +253,9 @@ P_ChangeSwitchTexture
 	    {
 		if (switchlist[i] == texBot)
 		{
+#ifndef NOSOUND
 		    S_StartSound(buttonlist->soundorg,sound);
+#endif
 		    sides[line->sidenum[0]].bottomtexture = switchlist[i^1];
 
 		    if (useAgain)
