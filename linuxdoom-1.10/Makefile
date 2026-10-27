@@ -25,8 +25,7 @@ CFLAGS += \
 	-DNONET
 
 
-LDFLAGS += -L/usr/X11R6/lib -nostdlib -static -nostartfiles
-# LIBS=-lXext -lX11 -lnsl -lm
+LDFLAGS += -nostdlib -static -nostartfiles
 
 # subdirectory for objects
 O := $(BUILD_DIR)
@@ -102,7 +101,7 @@ clean:
 
 $(O)/linuxxdoom: $(OBJS) $(O)/i_main.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) $(O)/i_main.o \
-	-o $(O)/linuxxdoom $(LIBS)
+	-o $(O)/linuxxdoom $(LIBS) $$MY_LIBC/lib/crt0.o -L$$MY_LIBC/lib -lc
 
 $(O)/%.o:	%.c
 	@mkdir -p $(dir $@)

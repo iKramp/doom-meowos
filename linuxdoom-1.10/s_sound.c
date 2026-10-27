@@ -875,4 +875,9 @@ S_getChannel
     return cnum;
 }
 
-#endif // NOSOUND
+#else
+//referenced outside
+int snd_SfxVolume = 15;
+int snd_MusicVolume = 15;
+int numChannels = 3;
+#endif

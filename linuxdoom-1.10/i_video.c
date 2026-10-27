@@ -568,6 +568,10 @@ void UploadNewPalette(byte *palette)
     }
 }
 
+void I_SetPalette(byte *palette) {
+    UploadNewPalette(palette);
+}
+
 void I_InitGraphics(void) {
     static int firsttime = 1;
 

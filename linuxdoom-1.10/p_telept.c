@@ -109,13 +109,17 @@ EV_Teleport
 				
 		// spawn teleport fog at source and destination
 		fog = P_SpawnMobj (oldx, oldy, oldz, MT_TFOG);
+#ifndef NOSOUND
 		S_StartSound (fog, sfx_telept);
+#endif
 		an = m->angle >> ANGLETOFINESHIFT;
 		fog = P_SpawnMobj (m->x+20*finecosine[an], m->y+20*finesine[an]
 				   , thing->z, MT_TFOG);
 
 		// emit sound, where?
+#ifndef NOSOUND
 		S_StartSound (fog, sfx_telept);
+#endif
 		
 		// don't move for a bit
 		if (thing->player)
