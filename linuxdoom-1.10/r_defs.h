@@ -355,11 +355,11 @@ typedef struct drawseg_s
 // of patches.
 typedef struct 
 { 
-    short		width;		// bounding box size 
-    short		height; 
-    short		leftoffset;	// pixels to the left of origin 
-    short		topoffset;	// pixels below the origin 
-    int			columnofs[8];	// only [width] used
+    uint16_t		width;		// bounding box size 
+    uint16_t		height; 
+    int16_t     leftoffset;	// pixels to the left of origin 
+    int16_t     topoffset;	// pixels below the origin 
+    uint32_t   	columnofs[0];	// only [width] used
     // the [0] is &columnofs[width] 
 } patch_t;
 

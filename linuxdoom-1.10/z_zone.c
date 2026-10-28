@@ -192,7 +192,9 @@ Z_Malloc
     memblock_t* newblock;
     memblock_t*	base;
 
-    size = (size + 3) & ~3;
+#define ALIGNMENT 8
+
+    size = (size + (ALIGNMENT - 1)) & ~(ALIGNMENT - 1);
     
     // scan through the block list,
     // looking for the first free block
@@ -284,8 +286,16 @@ Z_Malloc
     mainzone->rover = base->next;	
 	
     base->id = ZONEID;
+
+    void *ptr = (void *) ((byte *)base + sizeof(memblock_t));
+    //check if canonical and in userspace
+    uint64_t ptrval = (uint64_t)ptr;
+    if (ptrval >= ((uint64_t)1 << 48) || ptrval < 0x100)
+    {
+        I_Error("Z_Malloc: allocated pointer is not canonical or in userspace");
+    }
     
-    return (void *) ((byte *)base + sizeof(memblock_t));
+    return ptr;
 }
 
 

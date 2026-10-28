@@ -23,6 +23,7 @@
 //
 //-----------------------------------------------------------------------------
 
+#include <stdio.h>
 static const char rcsid[] = "$Id: r_data.c,v 1.4 1997/02/03 16:47:55 b1 Exp $";
 
 #include "i_system.h"
@@ -63,11 +64,11 @@ static const char rcsid[] = "$Id: r_data.c,v 1.4 1997/02/03 16:47:55 b1 Exp $";
 // and possibly other attributes.
 //
 typedef struct {
-    short originx;
-    short originy;
-    short patch;
-    short stepdir;
-    short colormap;
+    uint16_t originx;
+    uint16_t originy;
+    uint16_t patch;
+    uint16_t stepdir;
+    uint16_t colormap;
 } mappatch_t;
 
 //
@@ -75,14 +76,24 @@ typedef struct {
 // A DOOM wall texture is a list of patches
 // which are to be combined in a predefined order.
 //
+// typedef struct {
+//     char name[8];
+//     boolean masked;
+//     short width;
+//     short height;
+//     void **columndirectory; // OBSOLETE
+//     short patchcount;
+//     mappatch_t patches[1];
+// } maptexture_t;
 typedef struct {
-    char name[8];
-    boolean masked;
-    short width;
-    short height;
-    void **columndirectory; // OBSOLETE
-    short patchcount;
-    mappatch_t patches[1];
+    uint8_t name[8];
+    uint8_t masked;
+    uint8_t padding[3];
+    uint16_t width;
+    uint16_t height;
+    uint16_t columndirectory[2]; // OBSOLETE
+    uint16_t patchcount;
+    mappatch_t patches[0];
 } maptexture_t;
 
 // A single patch from a texture definition,
@@ -277,34 +288,46 @@ void R_GenerateLookup(int texnum) {
     texturecompositesize[texnum] = 0;
     collump = texturecolumnlump[texnum];
     colofs = texturecolumnofs[texnum];
+    printf("texture %d: collump: %p, colofs: %p\n", texnum, collump, colofs);
+    printf("direct from arr: collump: %p, colofs: %p\n", texnum, texturecolumnlump[texnum], texturecolumnofs[texnum]);
 
     // Now count the number of columns
     //  that are covered by more than one patch.
     // Fill in the lump / offset, so columns
     //  with only a single patch are all done.
     patchcount = (byte *)alloca(texture->width);
+    printf("patchcount ptr: %p, length (bytes): %d\n", patchcount, texture->width);
     memset(patchcount, 0, texture->width);
     patch = texture->patches;
 
     for (i = 0, patch = texture->patches; i < texture->patchcount;
          i++, patch++) {
+        printf(" patch %d: ox:%d, oy:%d, patch_num:%d\n", i, patch->originx, patch->originy, patch->patch);
         realpatch = W_CacheLumpNum(patch->patch, PU_CACHE);
         x1 = patch->originx;
         x2 = x1 + SHORT(realpatch->width);
 
-        if (x1 < 0)
+        if (x1 < 0) {
             x = 0;
-        else
+        } else {
             x = x1;
+        }
 
-        if (x2 > texture->width)
+        printf(" x1: %d, x2: %d\n", x1, x2);
+
+        if (x2 > texture->width) {
             x2 = texture->width;
+        }
         for (; x < x2; x++) {
             patchcount[x]++;
             collump[x] = patch->patch;
-            colofs[x] = LONG(realpatch->columnofs[x - x1]) + 3;
+            int xoff = x - x1;
+            int colofs_val = LONG(realpatch->columnofs[xoff]);
+            colofs[x] = colofs_val + 3;
         }
     }
+
+    printf("checking columns\n");
 
     for (x = 0; x < texture->width; x++) {
         if (!patchcount[x]) {
@@ -362,9 +385,9 @@ void R_InitTextures(void) {
     int i;
     int j;
 
-    int *maptex;
-    int *maptex2;
-    int *maptex1;
+    uint32_t *maptex;
+    uint32_t *maptex2;
+    uint32_t *maptex1;
 
     char name[9];
     char *names;
@@ -380,7 +403,7 @@ void R_InitTextures(void) {
     int numtextures1;
     int numtextures2;
 
-    int *directory;
+    uint32_t *directory;
 
     int temp1;
     int temp2;
@@ -439,19 +462,24 @@ void R_InitTextures(void) {
     for (i = 0; i < temp3; i++)
         printf("\x8");
     printf("\x8\x8\x8\x8\x8\x8\x8\x8\x8\x8");
+    printf("\n");
 
-    for (i = 0; i < numtextures; i++, directory++) {
-        if (!(i & 63))
-            printf(".");
-
+    int i_in_lump = 0;
+    for (i = 0; i < numtextures; i++) {
+        // if (!(i & 63))
+        //     printf(".");
         if (i == numtextures1) {
             // Start looking in second texture file.
             maptex = maptex2;
             maxoff = maxoff2;
             directory = maptex + 1;
+            i_in_lump = 0;
         }
 
-        offset = LONG(*directory);
+        uint32_t dir_offset = directory[i_in_lump];
+
+        offset = LONG(dir_offset);
+
 
         if (offset > maxoff)
             I_Error("R_InitTextures: bad texture directory");
@@ -484,22 +512,28 @@ void R_InitTextures(void) {
         texturecolumnofs[i] = Z_Malloc(texture->width * 2, PU_STATIC, 0);
 
         j = 1;
-        while (j * 2 <= texture->width)
+        while (j * 2 <= texture->width) {
             j <<= 1;
+        }
 
         texturewidthmask[i] = j - 1;
         textureheight[i] = texture->height << FRACBITS;
 
         totalwidth += texture->width;
+
+        i_in_lump++;
     }
+
+    printf("imported all textures\n");
 
     Z_Free(maptex1);
     if (maptex2)
         Z_Free(maptex2);
 
     // Precalculate whatever possible.
-    for (i = 0; i < numtextures; i++)
+    for (i = 0; i < numtextures; i++) {
         R_GenerateLookup(i);
+    }
 
     // Create translation table for global animation.
     texturetranslation = Z_Malloc((numtextures + 1) * 4, PU_STATIC, 0);
