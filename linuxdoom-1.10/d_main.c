@@ -907,6 +907,7 @@ void D_DoomMain(void) {
 
     printf("ST_Init: Init status bar.\n");
     ST_Init();
+    printf("ST_Init returned\n");
 
     // check for a driver that wants intermission stats
     p = M_CheckParm("-statcopy");

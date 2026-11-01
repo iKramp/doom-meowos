@@ -121,7 +121,6 @@ void W_AddFile(char *filename) {
     wadinfo_t header;
     lumpinfo_t *lump_p;
     unsigned i;
-    // int handle;
     FILE *handle;
     int length;
     int startlump;
@@ -129,81 +128,156 @@ void W_AddFile(char *filename) {
     filelump_t singleinfo;
     FILE *storehandle;
 
-    // open the file and add to directory
+    printf("\n[W_AddFile] ========================================\n");
+    printf("[W_AddFile] Loading file: %s\n", filename);
+    printf("[W_AddFile] Current numlumps: %d\n", numlumps);
 
-    // handle reload indicator.
+    // Handle reload indicator.
     if (filename[0] == '~') {
         filename++;
         reloadname = filename;
         reloadlump = numlumps;
+
+        printf("[W_AddFile] Reload indicator detected\n");
+        printf("[W_AddFile] Reload name: %s\n", reloadname);
+        printf("[W_AddFile] Reload lump: %d\n", reloadlump);
     }
 
     handle = fopen(filename, "rb");
+
     if (!handle) {
-        printf(" couldn't open %s\n", filename);
+        printf("[W_AddFile] ERROR: Couldn't open %s\n", filename);
         return;
     }
 
-    printf(" adding %s\n", filename);
+    printf("[W_AddFile] File opened successfully\n");
+
     startlump = numlumps;
 
+    printf("[W_AddFile] Starting lump index: %d\n", startlump);
+
     if (strcmp(filename + strlen(filename) - 3, "wad")) {
-        // single lump file
+        // Single lump file.
+        printf("[W_AddFile] Detected single lump file\n");
+
         fileinfo = &singleinfo;
         singleinfo.filepos = 0;
         singleinfo.size = LONG(filelength(handle));
+
         ExtractFileBase(filename, singleinfo.name);
+
+        printf("[W_AddFile] Lump name: %.8s\n", singleinfo.name);
+        printf("[W_AddFile] Lump size: %d\n", singleinfo.size);
+
         numlumps++;
     } else {
-        // WAD file
+        // WAD file.
+        printf("[W_AddFile] Detected WAD file\n");
+
         int res = fread(&header, sizeof(header), 1, handle);
+
         if (res < 1) {
+            printf("[W_AddFile] ERROR: Failed to read WAD header\n");
             I_Error("Wad file %s is too short to contain a header", filename);
         }
+
+        printf("[W_AddFile] WAD identification: %.4s\n",
+               header.identification);
+
         if (strncmp(header.identification, "IWAD", 4)) {
-            printf("Wad file %s doesn't have IWAD id\n", filename);
-            // Homebrew levels?
+            printf("[W_AddFile] WARNING: WAD is not an IWAD\n");
+
             if (strncmp(header.identification, "PWAD", 4)) {
+                printf("[W_AddFile] ERROR: Invalid WAD identification\n");
+
                 I_Error("Wad file %s doesn't have IWAD "
                         "or PWAD id\n",
                         filename);
             }
-
-            // ???modifiedgame = true;
         }
+
         header.numlumps = LONG(header.numlumps);
         header.infotableofs = LONG(header.infotableofs);
+
+        printf("[W_AddFile] Number of lumps: %d\n", header.numlumps);
+        printf("[W_AddFile] Directory offset: %d\n",
+               header.infotableofs);
+
         length = header.numlumps * sizeof(filelump_t);
+
+        printf("[W_AddFile] Directory size: %d bytes\n", length);
+
         fileinfo = alloca(length);
+
+        printf("[W_AddFile] Seeking to directory offset...\n");
+
         fseek(handle, header.infotableofs, SEEK_SET);
-        fread(fileinfo, length, 1, handle);
+
+        // int read_result = fread(fileinfo, length, 1, handle);
+        int read_result = _fread(handle->fd, length, fileinfo, 1).ret0;
+
+        if (read_result < 1) {
+            printf("[W_AddFile] ERROR: Failed to read lump directory\n");
+            I_Error("Wad file %s has an unreadable lump directory",
+                    filename);
+        }
+
+        printf("[W_AddFile] Lump directory read successfully\n");
+
         numlumps += header.numlumps;
-        // print some info about file
-        printf("  %d lumps\n", header.numlumps);
-        printf("  %d bytes\n", filelength(handle));
+
+        printf("[W_AddFile] File contains %d lumps\n",
+               header.numlumps);
+
+        printf("[W_AddFile] File size: %d bytes\n",
+               filelength(handle));
     }
 
-    // Fill in lumpinfo
+    printf("[W_AddFile] Total lumps after loading: %d\n", numlumps);
+
+    // Fill in lumpinfo.
+    printf("[W_AddFile] Reallocating lumpinfo...\n");
+
     lumpinfo = realloc(lumpinfo, numlumps * sizeof(lumpinfo_t));
 
     if (!lumpinfo) {
+        printf("[W_AddFile] ERROR: Failed to allocate lumpinfo\n");
         I_Error("Couldn't realloc lumpinfo");
     }
+
+    printf("[W_AddFile] lumpinfo allocated successfully\n");
 
     lump_p = &lumpinfo[startlump];
 
     storehandle = reloadname ? NULL : handle;
 
+    printf("[W_AddFile] Stored file handle: %p\n",
+           (void *)storehandle);
+
+    printf("[W_AddFile] Populating lumpinfo entries...\n");
+
     for (i = startlump; i < numlumps; i++, lump_p++, fileinfo++) {
         lump_p->handle = storehandle;
         lump_p->position = LONG(fileinfo->filepos);
         lump_p->size = LONG(fileinfo->size);
+
         strncpy(lump_p->name, fileinfo->name, 8);
     }
 
+    printf("[W_AddFile] Finished populating lumpinfo\n");
+
+    printf("[W_AddFile] Loaded lump range: %d - %d\n",
+           startlump, numlumps - 1);
+
     if (reloadname) {
+        printf("[W_AddFile] Reload mode: closing file handle\n");
         fclose(handle);
     }
+
+    printf("[W_AddFile] Successfully loaded %s\n", filename);
+    printf("[W_AddFile] Total registered lumps: %d\n",
+           numlumps);
+    printf("[W_AddFile] ========================================\n\n");
 }
 
 //

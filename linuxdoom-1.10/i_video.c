@@ -575,6 +575,11 @@ void I_SetPalette(byte *palette) {
 void I_InitGraphics(void) {
     static int firsttime = 1;
 
+    color_palette = malloc(sizeof(struct color) * 256);
+    if (!color_palette) {
+        I_Error("Could not allocate memory for color palette");
+    }
+
     if (!firsttime)
         return;
     firsttime = 0;
