@@ -38,9 +38,9 @@ static const char rcsid[] = "$Id: d_main.c,v 1.8 1997/02/03 22:45:09 b1 Exp $";
 #include "dstrings.h"
 
 #ifndef NOSOUND
-#include "sounds.h"
-#include "s_sound.h"
 #include "i_sound.h"
+#include "s_sound.h"
+#include "sounds.h"
 #endif
 
 #include "v_video.h"
@@ -142,14 +142,16 @@ void D_ProcessEvents(void) {
     event_t *ev;
 
     // IF STORE DEMO, DO NOT ACCEPT INPUT
-    if ((gamemode == commercial) && (W_CheckNumForName("map01") < 0))
+    if ((gamemode == commercial) && (W_CheckNumForName("map01") < 0)) {
         return;
+    }
 
     for (; eventtail != eventhead;
          eventtail = (++eventtail) & (MAXEVENTS - 1)) {
         ev = &events[eventtail];
-        if (M_Responder(ev))
+        if (M_Responder(ev)) {
             continue; // menu ate the event
+        }
         G_Responder(ev);
     }
 }
@@ -180,8 +182,9 @@ void D_Display(void) {
     boolean wipe;
     boolean redrawsbar;
 
-    if (nodrawers)
+    if (nodrawers) {
         return; // for comparative timing / profiling
+    }
 
     redrawsbar = false;
 
@@ -196,23 +199,29 @@ void D_Display(void) {
     if (gamestate != wipegamestate) {
         wipe = true;
         wipe_StartScreen(0, 0, SCREENWIDTH, SCREENHEIGHT);
-    } else
+    } else {
         wipe = false;
+    }
 
-    if (gamestate == GS_LEVEL && gametic)
+    if (gamestate == GS_LEVEL && gametic) {
         HU_Erase();
+    }
 
     // do buffered drawing
     switch (gamestate) {
     case GS_LEVEL:
-        if (!gametic)
+        if (!gametic) {
             break;
-        if (automapactive)
+        }
+        if (automapactive) {
             AM_Drawer();
-        if (wipe || (viewheight != 200 && fullscreen))
+        }
+        if (wipe || (viewheight != 200 && fullscreen)) {
             redrawsbar = true;
-        if (inhelpscreensstate && !inhelpscreens)
+        }
+        if (inhelpscreensstate && !inhelpscreens) {
             redrawsbar = true; // just put away the help screen
+        }
         ST_Drawer(viewheight == 200, redrawsbar);
         fullscreen = viewheight == 200;
         break;
@@ -234,15 +243,18 @@ void D_Display(void) {
     I_UpdateNoBlit();
 
     // draw the view directly
-    if (gamestate == GS_LEVEL && !automapactive && gametic)
+    if (gamestate == GS_LEVEL && !automapactive && gametic) {
         R_RenderPlayerView(&players[displayplayer]);
+    }
 
-    if (gamestate == GS_LEVEL && gametic)
+    if (gamestate == GS_LEVEL && gametic) {
         HU_Drawer();
+    }
 
     // clean up border stuff
-    if (gamestate != oldgamestate && gamestate != GS_LEVEL)
+    if (gamestate != oldgamestate && gamestate != GS_LEVEL) {
         I_SetPalette(W_CacheLumpName("PLAYPAL", PU_CACHE));
+    }
 
     // see if the border needs to be initially drawn
     if (gamestate == GS_LEVEL && oldgamestate != GS_LEVEL) {
@@ -252,8 +264,9 @@ void D_Display(void) {
 
     // see if the border needs to be updated to the screen
     if (gamestate == GS_LEVEL && !automapactive && scaledviewwidth != 320) {
-        if (menuactive || menuactivestate || !viewactivestate)
+        if (menuactive || menuactivestate || !viewactivestate) {
             borderdrawcount = 3;
+        }
         if (borderdrawcount) {
             R_DrawViewBorder(); // erase old menu stuff
             borderdrawcount--;
@@ -267,19 +280,18 @@ void D_Display(void) {
 
     // draw pause pic
     if (paused) {
-        if (automapactive)
+        if (automapactive) {
             y = 4;
-        else
+        } else {
             y = viewwindowy + 4;
+        }
         V_DrawPatchDirect(viewwindowx + (scaledviewwidth - 68) / 2, y, 0,
                           W_CacheLumpName("M_PAUSE", PU_CACHE));
     }
 
     // menus go directly to the screen
-    M_Drawer();  // menu is drawn even on top of everything
-#ifndef NONET
+    M_Drawer(); // menu is drawn even on top of everything
     NetUpdate(); // send out any new accumulation
-#endif
 
     // normal update
     if (!wipe) {
@@ -293,6 +305,7 @@ void D_Display(void) {
     wipestart = I_GetTime() - 1;
 
     do {
+        printf("D_Display: wipe loop\n");
         do {
             nowtime = I_GetTime();
             tics = nowtime - wipestart;
@@ -312,8 +325,9 @@ void D_Display(void) {
 extern boolean demorecording;
 
 void D_DoomLoop(void) {
-    if (demorecording)
+    if (demorecording) {
         G_BeginRecording();
+    }
 
     I_InitGraphics();
 
@@ -325,21 +339,16 @@ void D_DoomLoop(void) {
         if (singletics) {
             I_StartTic();
             D_ProcessEvents();
-#ifndef NONET
             G_BuildTiccmd(&netcmds[consoleplayer][maketic % BACKUPTICS]);
-#endif
-            if (advancedemo)
+            if (advancedemo) {
                 D_DoAdvanceDemo();
+            }
             M_Ticker();
             G_Ticker();
             gametic++;
-#ifndef NONET
             maketic++;
-#endif
         } else {
-#ifndef NONET
             TryRunTics(); // will run at least one tic
-#endif
         }
 
 #ifndef NOSOUND
@@ -375,8 +384,9 @@ char *pagename;
 // Handles timing for warped projection
 //
 void D_PageTicker(void) {
-    if (--pagetic < 0)
+    if (--pagetic < 0) {
         D_AdvanceDemo();
+    }
 }
 
 //
@@ -403,24 +413,27 @@ void D_DoAdvanceDemo(void) {
     paused = false;
     gameaction = ga_nothing;
 
-    if (gamemode == retail)
+    if (gamemode == retail) {
         demosequence = (demosequence + 1) % 7;
-    else
+    } else {
         demosequence = (demosequence + 1) % 6;
+    }
 
     switch (demosequence) {
     case 0:
-        if (gamemode == commercial)
+        if (gamemode == commercial) {
             pagetic = 35 * 11;
-        else
+        } else {
             pagetic = 170;
+        }
         gamestate = GS_DEMOSCREEN;
         pagename = "TITLEPIC";
 #ifndef NOSOUND
-        if (gamemode == commercial)
+        if (gamemode == commercial) {
             S_StartMusic(mus_dm2ttl);
-        else
+        } else {
             S_StartMusic(mus_intro);
+        }
 #endif
         break;
     case 1:
@@ -445,10 +458,11 @@ void D_DoAdvanceDemo(void) {
         } else {
             pagetic = 200;
 
-            if (gamemode == retail)
+            if (gamemode == retail) {
                 pagename = "CREDIT";
-            else
+            } else {
                 pagename = "HELP2";
+            }
         }
         break;
     case 5:
@@ -534,7 +548,7 @@ void IdentifyVersion(void) {
     printf("Game mode indeterminate.\n");
     gamemode = indetermined;
 
-    I_Error ("Game mode indeterminate\n");
+    I_Error("Game mode indeterminate\n");
 }
 
 //
@@ -544,7 +558,7 @@ void FindResponseFile(void) {
     int i;
 #define MAXARGVS 100
 
-    for (i = 1; i < myargc; i++)
+    for (i = 1; i < myargc; i++) {
         if (myargv[i][0] == '@') {
             FILE *handle;
             int size;
@@ -571,8 +585,9 @@ void FindResponseFile(void) {
             fclose(handle);
 
             // KEEP ALL CMDLINE ARGS FOLLOWING @RESPONSEFILE ARG
-            for (index = 0, k = i + 1; k < myargc; k++)
+            for (index = 0, k = i + 1; k < myargc; k++) {
                 moreargs[index++] = myargv[k];
+            }
 
             firstargv = myargv[0];
             myargv = malloc(sizeof(char *) * MAXARGVS);
@@ -585,25 +600,30 @@ void FindResponseFile(void) {
             do {
                 myargv[indexinfile++] = infile + k;
                 while (k < size &&
-                       ((*(infile + k) >= ' ' + 1) && (*(infile + k) <= 'z')))
+                       ((*(infile + k) >= ' ' + 1) && (*(infile + k) <= 'z'))) {
                     k++;
+                }
                 *(infile + k) = 0;
                 while (k < size &&
-                       ((*(infile + k) <= ' ') || (*(infile + k) > 'z')))
+                       ((*(infile + k) <= ' ') || (*(infile + k) > 'z'))) {
                     k++;
+                }
             } while (k < size);
 
-            for (k = 0; k < index; k++)
+            for (k = 0; k < index; k++) {
                 myargv[indexinfile++] = moreargs[k];
+            }
             myargc = indexinfile;
 
             // DISPLAY ARGS
             printf("%d command-line args:\n", myargc);
-            for (k = 1; k < myargc; k++)
+            for (k = 1; k < myargc; k++) {
                 printf("%s\n", myargv[k]);
+            }
 
             break;
         }
+    }
 }
 
 //
@@ -624,10 +644,11 @@ void D_DoomMain(void) {
     respawnparm = M_CheckParm("-respawn");
     fastparm = M_CheckParm("-fast");
     devparm = M_CheckParm("-devparm");
-    if (M_CheckParm("-altdeath"))
+    if (M_CheckParm("-altdeath")) {
         deathmatch = 2;
-    else if (M_CheckParm("-deathmatch"))
+    } else if (M_CheckParm("-deathmatch")) {
         deathmatch = 1;
+    }
 
     switch (gamemode) {
     case retail:
@@ -685,8 +706,9 @@ void D_DoomMain(void) {
 
     printf("%s\n", title);
 
-    if (devparm)
+    if (devparm) {
         printf(D_DEVSTR);
+    }
 
     // turbo option
     if ((p = M_CheckParm("-turbo"))) {
@@ -694,12 +716,15 @@ void D_DoomMain(void) {
         extern int forwardmove[2];
         extern int sidemove[2];
 
-        if (p < myargc - 1)
+        if (p < myargc - 1) {
             scale = atoi(myargv[p + 1]);
-        if (scale < 10)
+        }
+        if (scale < 10) {
             scale = 10;
-        if (scale > 400)
+        }
+        if (scale > 400) {
             scale = 400;
+        }
         printf("turbo scale: %i%%\n", scale);
         forwardmove[0] = forwardmove[0] * scale / 100;
         forwardmove[1] = forwardmove[1] * scale / 100;
@@ -730,10 +755,11 @@ void D_DoomMain(void) {
         case commercial:
         default:
             p = atoi(myargv[p + 1]);
-            if (p < 10)
+            if (p < 10) {
                 sprintf(file, "~" DEVMAPS "cdata/map0%i.wad", p);
-            else
+            } else {
                 sprintf(file, "~" DEVMAPS "cdata/map%i.wad", p);
+            }
             break;
         }
         D_AddFile(file);
@@ -744,14 +770,16 @@ void D_DoomMain(void) {
         // the parms after p are wadfile/lump names,
         // until end of parms or another - preceded parm
         modifiedgame = true; // homebrew levels
-        while (++p != myargc && myargv[p][0] != '-')
+        while (++p != myargc && myargv[p][0] != '-') {
             D_AddFile(myargv[p]);
+        }
     }
 
     p = M_CheckParm("-playdemo");
 
-    if (!p)
+    if (!p) {
         p = M_CheckParm("-timedemo");
+    }
 
     if (p && p < myargc - 1) {
         sprintf(file, "%s.lmp", myargv[p + 1]);
@@ -783,20 +811,22 @@ void D_DoomMain(void) {
         int time;
         time = atoi(myargv[p + 1]);
         printf("Levels will end after %d minute", time);
-        if (time > 1)
+        if (time > 1) {
             printf("s");
+        }
         printf(".\n");
     }
 
     p = M_CheckParm("-avg");
-    if (p && p < myargc - 1 && deathmatch)
+    if (p && p < myargc - 1 && deathmatch) {
         printf("Austin Virtual Gaming: Levels will end after 20 minutes\n");
+    }
 
     p = M_CheckParm("-warp");
     if (p && p < myargc - 1) {
-        if (gamemode == commercial)
+        if (gamemode == commercial) {
             startmap = atoi(myargv[p + 1]);
-        else {
+        } else {
             startepisode = myargv[p + 1][0] - '0';
             startmap = myargv[p + 2][0] - '0';
         }
@@ -827,16 +857,20 @@ void D_DoomMain(void) {
                             "heada1", "cybra1", "spida1d1"};
         int i;
 
-        if (gamemode == shareware)
+        if (gamemode == shareware) {
             I_Error("\nYou cannot -file with the shareware "
                     "version. Register!");
+        }
 
         // Check for fake IWAD with right name,
         // but w/o all the lumps of the registered version.
-        if (gamemode == registered)
-            for (i = 0; i < 23; i++)
-                if (W_CheckNumForName(name[i]) < 0)
+        if (gamemode == registered) {
+            for (i = 0; i < 23; i++) {
+                if (W_CheckNumForName(name[i]) < 0) {
                     I_Error("\nThis is not the registered version.");
+                }
+            }
+        }
     }
 
     // Iff additonal PWAD files are used, print modified banner
@@ -942,19 +976,21 @@ void D_DoomMain(void) {
 
     p = M_CheckParm("-loadgame");
     if (p && p < myargc - 1) {
-        if (M_CheckParm("-cdrom"))
+        if (M_CheckParm("-cdrom")) {
             sprintf(file, "c:\\doomdata\\" SAVEGAMENAME "%c.dsg",
                     myargv[p + 1][0]);
-        else
+        } else {
             sprintf(file, SAVEGAMENAME "%c.dsg", myargv[p + 1][0]);
+        }
         G_LoadGame(file);
     }
 
     if (gameaction != ga_loadgame) {
-        if (autostart || netgame)
+        if (autostart || netgame) {
             G_InitNew(startskill, startepisode, startmap);
-        else
+        } else {
             D_StartTitle(); // start up intro loop
+        }
     }
 
     D_DoomLoop(); // never returns

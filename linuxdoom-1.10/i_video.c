@@ -21,6 +21,7 @@
 //
 //-----------------------------------------------------------------------------
 
+#include "w_wad.h"
 static const char rcsid[] = "$Id: i_x.c,v 1.6 1997/02/03 22:45:10 b1 Exp $";
 
 #include <stdint.h>
@@ -30,33 +31,12 @@ static const char rcsid[] = "$Id: i_x.c,v 1.6 1997/02/03 22:45:10 b1 Exp $";
 #include <syscalls/filesystem.h>
 #include <syscalls/proc.h>
 #include <syscalls/syscall_generic.h>
-// #include <sys/ipc.h>
-// #include <sys/shm.h>
-// #include <unistd.h>
-//
-// #include <X11/Xlib.h>
-// #include <X11/Xutil.h>
-// #include <X11/keysym.h>
-//
-// #include <X11/extensions/XShm.h>
-// // Had to dig up XShm.c for this one.
-// // It is in the libXext, but not in the XFree86 headers.
-// #ifdef LINUX
-// int XShmGetEventBase(Display *dpy); // problems with g++?
-// #endif
-
-// #include <sys/socket.h>
-// #include <sys/time.h>
-// #include <sys/types.h>
-
-// #include <errnos.h>
-// #include <netinet/in.h>
-// #include <signal.h>
 
 #include "d_main.h"
 #include "doomstat.h"
 #include "i_system.h"
 #include "v_video.h"
+#include "z_zone.h"
 
 #include "doomdef.h"
 
@@ -315,6 +295,7 @@ void NextEventNonBlocking(struct InputEvent *event) {
         event->generated_at.nanoseconds != 0) {
         return; // tmp is filled
     }
+    //print event before and after
     _fread(input_event_fd, sizeof(struct InputEvent), event, 1);
 }
 
@@ -336,8 +317,9 @@ void NextEventBlocking(struct InputEvent *event) {
 
 boolean EventPending() {
     NextEventNonBlocking(&tmp_input_event);
-    return tmp_input_event.generated_at.seconds != 0 ||
-           tmp_input_event.generated_at.nanoseconds != 0;
+    boolean has_event = tmp_input_event.generated_at.seconds != 0 ||
+                        tmp_input_event.generated_at.nanoseconds != 0;
+    return has_event;
 }
 
 //
@@ -574,7 +556,18 @@ void UploadNewPalette(byte *palette) {
     }
 }
 
-void I_SetPalette(byte *palette) { UploadNewPalette(palette); }
+void I_SetPalette(byte *palette) {
+    UploadNewPalette(palette);
+    // printf("I_SetPalette called\n");
+    // uint8_t *test_palette = malloc(256 * 3);
+    // for (int i = 0; i < 256; i++) {
+    //     test_palette[i * 3 + 0] = 255;
+    //     test_palette[i * 3 + 1] = 0;
+    //     test_palette[i * 3 + 2] = 0;
+    // }
+    // UploadNewPalette(test_palette);
+    // free(test_palette);
+}
 
 void I_InitGraphics(void) {
     static int firsttime = 1;
@@ -621,6 +614,8 @@ void I_InitGraphics(void) {
     }
 
     screens[0] = (unsigned char *)(image_data_256);
+
+    I_SetPalette(W_CacheLumpName("PLAYPAL", PU_CACHE));
 }
 
 unsigned exptable[256];

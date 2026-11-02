@@ -92,9 +92,7 @@ void I_Init(void) {
 // I_Quit
 //
 void I_Quit(void) {
-#ifndef NONET
     D_QuitNetGame();
-#endif
 #ifndef NOSOUND
     I_ShutdownSound();
     I_ShutdownMusic();
@@ -152,9 +150,7 @@ void I_Error(char *error, ...) {
     if (demorecording)
         G_CheckDemoStatus();
 
-#ifndef NONET
     D_QuitNetGame();
-#endif
     I_ShutdownGraphics();
 
     exit(-1);
