@@ -27,8 +27,8 @@ static const char rcsid[] = "$Id: i_x.c,v 1.6 1997/02/03 22:45:10 b1 Exp $";
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <syscalls/proc.h>
 #include <syscalls/filesystem.h>
+#include <syscalls/proc.h>
 #include <syscalls/syscall_generic.h>
 // #include <sys/ipc.h>
 // #include <sys/shm.h>
@@ -311,29 +311,33 @@ void NextEventNonBlocking(struct InputEvent *event) {
         I_Error("Input event file descriptor not initialized");
     }
 
-    if (event->generated_at.seconds != 0 || event->generated_at.nanoseconds != 0) {
-        return; //tmp is filled
+    if (event->generated_at.seconds != 0 ||
+        event->generated_at.nanoseconds != 0) {
+        return; // tmp is filled
     }
     _fread(input_event_fd, sizeof(struct InputEvent), event, 1);
 }
 
-void NextEventBlocking(struct InputEvent *event) { 
+void NextEventBlocking(struct InputEvent *event) {
     if (input_event_fd < 0) {
         I_Error("Input event file descriptor not initialized");
     }
 
-    if (tmp_input_event.generated_at.seconds != 0 || tmp_input_event.generated_at.nanoseconds != 0) {
+    if (tmp_input_event.generated_at.seconds != 0 ||
+        tmp_input_event.generated_at.nanoseconds != 0) {
         *event = tmp_input_event;
         tmp_input_event.generated_at.seconds = 0;
         tmp_input_event.generated_at.nanoseconds = 0;
-        return; //tmp is filled
+        return; // tmp is filled
     }
-    _fread(input_event_fd, sizeof(struct InputEvent), event, 0); //without nonblocking flag
+    _fread(input_event_fd, sizeof(struct InputEvent), event,
+           0); // without nonblocking flag
 }
 
 boolean EventPending() {
     NextEventNonBlocking(&tmp_input_event);
-    return tmp_input_event.generated_at.seconds != 0 || tmp_input_event.generated_at.nanoseconds != 0;
+    return tmp_input_event.generated_at.seconds != 0 ||
+           tmp_input_event.generated_at.nanoseconds != 0;
 }
 
 //
@@ -490,8 +494,9 @@ void I_GetEvent(void) {
 // I_StartTic
 //
 void I_StartTic(void) {
-    while (EventPending())
+    while (EventPending()) {
         I_GetEvent();
+    }
 
     mousemoved = false;
 }
@@ -519,16 +524,19 @@ void I_FinishUpdate(void) {
         i = I_GetTime();
         tics = i - lasttic;
         lasttic = i;
-        if (tics > 20)
+        if (tics > 20) {
             tics = 20;
+        }
 
-        for (i = 0; i < tics * 2; i += 2)
+        for (i = 0; i < tics * 2; i += 2) {
             screens[0][(SCREENHEIGHT - 1) * SCREENWIDTH + i] = 0xff;
-        for (; i < 20 * 2; i += 2)
+        }
+        for (; i < 20 * 2; i += 2) {
             screens[0][(SCREENHEIGHT - 1) * SCREENWIDTH + i] = 0x0;
+        }
     }
 
-    //screens[0] == image_data_256
+    // screens[0] == image_data_256
     for (i = 0; i < SCREENHEIGHT; i++) {
         for (int j = 0; j < SCREENWIDTH; j++) {
             uint8_t color_index = screens[0][i * SCREENWIDTH + j];
@@ -537,9 +545,8 @@ void I_FinishUpdate(void) {
             image_data_row[j * 3 + 2] = color_palette[color_index].b;
         }
 
-        fseek(fb_file, i * fb_width, SEEK_SET);
+        fseek(fb_file, i * fb_width * 3, SEEK_SET);
         fwrite(image_data_row, 1, SCREENWIDTH * 3, fb_file);
-        
     }
     fflush(fb_file);
 }
@@ -551,14 +558,13 @@ void I_ReadScreen(byte *scr) {
     memcpy(scr, screens[0], SCREENWIDTH * SCREENHEIGHT);
 }
 
-void UploadNewPalette(byte *palette)
-{
+void UploadNewPalette(byte *palette) {
 
-    register int	i;
-    register int	c;
+    register int i;
+    register int c;
 
     // set the X colormap entries
-    for (i=0 ; i<256 ; i++) {
+    for (i = 0; i < 256; i++) {
         c = gammatable[usegamma][*palette++];
         color_palette[i].r = c;
         c = gammatable[usegamma][*palette++];
@@ -568,9 +574,7 @@ void UploadNewPalette(byte *palette)
     }
 }
 
-void I_SetPalette(byte *palette) {
-    UploadNewPalette(palette);
-}
+void I_SetPalette(byte *palette) { UploadNewPalette(palette); }
 
 void I_InitGraphics(void) {
     static int firsttime = 1;
@@ -580,12 +584,13 @@ void I_InitGraphics(void) {
         I_Error("Could not allocate memory for color palette");
     }
 
-    if (!firsttime)
+    if (!firsttime) {
         return;
+    }
     firsttime = 0;
 
     char *events_file = "/input/all";
-    //flags: read
+    // flags: read
     input_event_fd = _fopen(strlen(events_file), events_file, -1, 1, -1);
     if (input_event_fd < 0) {
         I_Error("Could not open input event file %s", events_file);
@@ -604,6 +609,8 @@ void I_InitGraphics(void) {
         I_Error("Could not read framebuffer height");
     }
 
+    printf("Framebuffer size: %dx%d\n", fb_width, fb_height);
+
     image_data_256 = malloc(SCREENWIDTH * SCREENHEIGHT);
     if (!image_data_256) {
         I_Error("Could not allocate memory for image_data_256");
@@ -621,8 +628,9 @@ unsigned exptable[256];
 void InitExpand(void) {
     int i;
 
-    for (i = 0; i < 256; i++)
+    for (i = 0; i < 256; i++) {
         exptable[i] = i | (i << 8) | (i << 16) | (i << 24);
+    }
 }
 
 double exptable2[256 * 256];
