@@ -305,7 +305,6 @@ void D_Display(void) {
     wipestart = I_GetTime() - 1;
 
     do {
-        printf("D_Display: wipe loop\n");
         do {
             nowtime = I_GetTime();
             tics = nowtime - wipestart;

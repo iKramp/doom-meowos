@@ -206,12 +206,9 @@ int wipe_ScreenWipe(int wipeno, int x, int y, int width, int height, int ticks) 
 
     void V_MarkRect(int, int, int, int);
 
-    printf("[Wipe] >>> ENTER: wipeno=%d, x=%d, y=%d, w=%d, h=%d, ticks=%d\n", wipeno, x, y, width, height, ticks);
-
     // initial stuff
     if (!go) {
         go = 1;
-        printf("[Wipe] Init phase: starting wipe type %d\n", wipeno);
         // wipe_scr = (byte *) Z_Malloc(width*height, PU_STATIC, 0); // DEBUG
         wipe_scr = screens[0];
         (*wipes[wipeno * 3])(width, height, ticks);
@@ -220,18 +217,15 @@ int wipe_ScreenWipe(int wipeno, int x, int y, int width, int height, int ticks) 
     // do a piece of wipe-in
     V_MarkRect(0, 0, width, height);
     rc = (*wipes[wipeno * 3 + 1])(width, height, ticks);
-    printf("[Wipe] Do phase: rc=%d\n", rc);
     //  V_DrawBlock(x, y, 0, width, height, wipe_scr); // DEBUG
 
     // final stuff
     if (rc) {
         go = 0;
-        printf("[Wipe] Exit phase: wipe complete\n");
         (*wipes[wipeno * 3 + 2])(width, height, ticks);
     }
 
     int ret_val = !go;
-    printf("[Wipe] <<< EXIT: returning %d (go=%d)\n", ret_val, go);
     return ret_val;
 }
 
