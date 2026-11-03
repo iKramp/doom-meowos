@@ -418,6 +418,8 @@ void D_DoAdvanceDemo(void) {
         demosequence = (demosequence + 1) % 6;
     }
 
+    demosequence = 0; //don't increment
+
     switch (demosequence) {
     case 0:
         if (gamemode == commercial) {

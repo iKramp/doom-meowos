@@ -275,6 +275,9 @@ int translateKeyboardCode(int keycode) {
     case 50:
         rc = 'm';
         break;
+    case 57:
+        rc = ' ';
+        break;
     default:
         rc = 0;
         break;
@@ -343,6 +346,9 @@ void I_GetEvent(void) {
     case InputeventDeviceType_Keyboard:
         event.data1 = translateKeyboardCode(input_event.code);
         event.type = input_event.value ? ev_keydown : ev_keyup;
+        printf("Key event: code=%d, value=%d, translated=%d, type=%s\n",
+               input_event.code, input_event.value, event.data1,
+               event.type == ev_keydown ? "keydown" : "keyup");
         D_PostEvent(&event);
         break;
     // case KeyPress:
@@ -365,12 +371,13 @@ void I_GetEvent(void) {
                 mouse_state |= 1;
                 event.data1 = mouse_state;
             } else {
-                // set before clearing bit as in original impl
-                event.data1 = mouse_state;
                 mouse_state &= ~1;
+                event.data1 = mouse_state;
             }
             event.data2 = 0;
             event.data3 = 0;
+            printf("Mouse event (left button): code=%d, value=%d, mouse_state=%d\n", code,
+                   input_event.value, mouse_state);
             D_PostEvent(&event);
             break;
         }
@@ -379,12 +386,13 @@ void I_GetEvent(void) {
                 mouse_state |= 4;
                 event.data1 = mouse_state;
             } else {
-                // set before clearing bit as in original impl
-                event.data1 = mouse_state;
                 mouse_state &= ~4;
+                event.data1 = mouse_state;
             }
             event.data2 = 0;
             event.data3 = 0;
+            printf("Mouse event (right button): code=%d, value=%d, mouse_state=%d\n", code,
+                   input_event.value, mouse_state);
             D_PostEvent(&event);
             break;
         }
@@ -393,12 +401,13 @@ void I_GetEvent(void) {
                 mouse_state |= 2;
                 event.data1 = mouse_state;
             } else {
-                // set before clearing bit as in original impl
-                event.data1 = mouse_state;
                 mouse_state &= ~2;
+                event.data1 = mouse_state;
             }
             event.data2 = 0;
             event.data3 = 0;
+            printf("Mouse event (middle button): code=%d, value=%d, mouse_state=%d\n", code,
+                   input_event.value, mouse_state);
             D_PostEvent(&event);
             break;
         }
@@ -434,6 +443,8 @@ void I_GetEvent(void) {
             event.data1 = mouse_state;
             event.data2 = input_event.value << 2;
             event.data3 = 0;
+            printf("Mouse event (x movement): code=%d, value=%d, mouse_state=%d\n", code,
+                   input_event.value, mouse_state);
             D_PostEvent(&event);
             break;
         }
@@ -442,6 +453,8 @@ void I_GetEvent(void) {
             event.data1 = mouse_state;
             event.data2 = 0;
             event.data3 = input_event.value << 2;
+            printf("Mouse event (y movement): code=%d, value=%d, mouse_state=%d\n", code,
+                   input_event.value, mouse_state);
             D_PostEvent(&event);
             break;
         }

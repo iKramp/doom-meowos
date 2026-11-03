@@ -165,6 +165,7 @@ extern int key_speed;
 extern int mousebfire;
 extern int mousebstrafe;
 extern int mousebforward;
+extern int usemouseforward;
 
 extern int joybfire;
 extern int joybstrafe;
@@ -203,23 +204,20 @@ typedef struct {
     char *name;
     int *location;
     uint64_t defaultvalue;
-    int scantranslate; // PC scan code hack
-    int untranslated;  // lousy hack
 } default_t;
 
 default_t defaults[] = {
-    {"mouse_sensitivity", &mouseSensitivity, 5},
+    {"mouse_sensitivity", &mouseSensitivity, 15},
     {"sfx_volume", &snd_SfxVolume, 8},
     {"music_volume", &snd_MusicVolume, 8},
     {"show_messages", &showMessages, 1},
 
-#ifdef NORMALUNIX
-    {"key_right", &key_right, KEY_RIGHTARROW},
-    {"key_left", &key_left, KEY_LEFTARROW},
-    {"key_up", &key_up, KEY_UPARROW},
-    {"key_down", &key_down, KEY_DOWNARROW},
-    {"key_strafeleft", &key_strafeleft, ','},
-    {"key_straferight", &key_straferight, '.'},
+    {"key_right", &key_right, 'e'},
+    {"key_left", &key_left, 'q'},
+    {"key_up", &key_up, 'w'},
+    {"key_down", &key_down, 's'},
+    {"key_strafeleft", &key_strafeleft, 'a'},
+    {"key_straferight", &key_straferight, 'd'},
 
     {"key_fire", &key_fire, KEY_RCTRL},
     {"key_use", &key_use, ' '},
@@ -227,22 +225,16 @@ default_t defaults[] = {
     {"key_speed", &key_speed, KEY_RSHIFT},
 
 // UNIX hack, to be removed.
-#ifdef SNDSERV
-    {"sndserver", (int *)&sndserver_filename, (int)"sndserver"},
-    {"mb_used", &mb_used, 2},
-#endif
-
-#endif
-
-#ifdef LINUX
-    {"mousedev", (int *)&mousedev, (int)"/dev/ttyS0"},
-    {"mousetype", (int *)&mousetype, (int)"microsoft"},
-#endif
+// #ifdef SNDSERV
+//     {"sndserver", (int *)&sndserver_filename, (uint64_t)"sndserver"},
+//     {"mb_used", &mb_used, 2},
+// #endif
 
     {"use_mouse", &usemouse, 1},
     {"mouseb_fire", &mousebfire, 0},
     {"mouseb_strafe", &mousebstrafe, 1},
     {"mouseb_forward", &mousebforward, 2},
+    {"use_mouse_forward", &usemouseforward, 0},
 
     {"use_joystick", &usejoystick, 0},
     {"joyb_fire", &joybfire, 0},
@@ -320,6 +312,7 @@ void M_LoadDefaults(void) {
     numdefaults = sizeof(defaults) / sizeof(defaults[0]);
     for (i = 0; i < numdefaults; i++) {
         *defaults[i].location = defaults[i].defaultvalue;
+        printf("Default %s: %i\n", defaults[i].name, *defaults[i].location);
     }
 
     // check for a custom default file

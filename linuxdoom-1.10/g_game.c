@@ -153,6 +153,7 @@ int key_speed;
 int mousebfire;
 int mousebstrafe;
 int mousebforward;
+int usemouseforward;
 
 int joybfire;
 int joybstrafe;
@@ -380,7 +381,10 @@ void G_BuildTiccmd(ticcmd_t *cmd) {
         }
     }
 
-    forward += mousey;
+    if (usemouseforward) {
+        forward += mousey;
+    }
+
     if (strafe) {
         side += mousex * 2;
     } else {
